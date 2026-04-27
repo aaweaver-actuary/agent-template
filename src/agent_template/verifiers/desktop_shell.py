@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
+
+import yaml
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from ..browser.playwright_runner import PlaywrightRunner
 from ..models import CheckResult, MilestoneResult
@@ -14,96 +17,85 @@ from ..verifiers.browser_checks import (
 DEFAULT_MILESTONE_PATH = Path(__file__).resolve().parents[1] / "milestones" / "desktop_shell.yaml"
 
 
-@dataclass(frozen=True)
-class MilestoneCheck:
-    name: str
+class MilestoneTarget(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["static_server"]
+    url_path: str
+
+
+class MilestoneCheck(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    type: Literal["selector_exists"]
     selector: str
+    required: bool = True
+
+    @property
+    def name(self) -> str:
+        return self.id
 
 
-@dataclass(frozen=True)
-class MilestoneDefinition:
-    milestone_id: str
+class MilestoneWorkPackage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    default_modify_files: tuple[str, ...] = ()
+    default_read_files: tuple[str, ...] = ()
+    non_goals: tuple[str, ...] = ()
+
+
+class MilestoneDefinition(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
     description: str
+    target: MilestoneTarget
     checks: tuple[MilestoneCheck, ...]
+    work_package: MilestoneWorkPackage | None = None
+
+    @property
+    def milestone_id(self) -> str:
+        return self.id
 
 
-def _parse_scalar(line: str) -> str:
-    _, value = line.split(":", 1)
-    value = value.strip()
-    if value[:1] in {"'", '"'} and value[-1:] == value[:1]:
-        return value[1:-1]
-    return value
+class MilestoneManifest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: Literal[1]
+    milestones: tuple[MilestoneDefinition, ...]
+
+
+def _format_manifest_error(milestone_path: Path, error: ValidationError) -> ValueError:
+    lines = [f"Invalid milestone manifest at {milestone_path}:"]
+    for entry in error.errors():
+        location = ".".join(str(part) for part in entry["loc"])
+        message = entry["msg"]
+        if "input" in entry:
+            message = f"{message} (got {entry['input']!r})"
+        lines.append(f"- {location}: {message}")
+    return ValueError("\n".join(lines))
 
 
 def load_milestone_definition(
     milestone_id: str,
     milestone_path: Path = DEFAULT_MILESTONE_PATH,
 ) -> MilestoneDefinition:
-    current_id: str | None = None
-    current_description = ""
-    current_checks: list[MilestoneCheck] = []
-    current_check_name: str | None = None
-    current_check_selector: str | None = None
+    try:
+        raw_manifest = yaml.safe_load(milestone_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as error:
+        raise ValueError(f"Invalid YAML in milestone manifest {milestone_path}: {error}") from error
 
-    def finalize_check() -> None:
-        nonlocal current_check_name, current_check_selector
-        if current_check_name is None:
-            return
-        if current_check_selector is None:
-            raise ValueError(f"Missing selector for milestone check '{current_check_name}'.")
-        current_checks.append(
-            MilestoneCheck(name=current_check_name, selector=current_check_selector)
-        )
-        current_check_name = None
-        current_check_selector = None
+    try:
+        manifest = MilestoneManifest.model_validate(raw_manifest)
+    except ValidationError as error:
+        raise _format_manifest_error(milestone_path, error) from error
 
-    def finalize_milestone() -> MilestoneDefinition | None:
-        finalize_check()
-        if current_id != milestone_id:
-            return None
-        return MilestoneDefinition(
-            milestone_id=current_id,
-            description=current_description,
-            checks=tuple(current_checks),
-        )
+    for milestone in manifest.milestones:
+        if milestone.milestone_id == milestone_id:
+            return milestone
 
-    for raw_line in milestone_path.read_text(encoding="utf-8").splitlines():
-        stripped = raw_line.strip()
-        indent = len(raw_line) - len(raw_line.lstrip(" "))
-        if not stripped:
-            continue
-
-        if indent == 2 and stripped.startswith("- id:"):
-            found = finalize_milestone()
-            if found is not None:
-                return found
-            current_id = _parse_scalar(stripped)
-            current_description = ""
-            current_checks = []
-            current_check_name = None
-            current_check_selector = None
-            continue
-
-        if current_id != milestone_id:
-            continue
-
-        if indent == 4 and stripped.startswith("description:"):
-            current_description = _parse_scalar(stripped)
-            continue
-
-        if indent == 6 and stripped.startswith("- name:"):
-            finalize_check()
-            current_check_name = _parse_scalar(stripped)
-            continue
-
-        if indent == 8 and stripped.startswith("selector:"):
-            current_check_selector = _parse_scalar(stripped)
-
-    found = finalize_milestone()
-    if found is not None:
-        return found
-
-    raise ValueError(f"Milestone '{milestone_id}' not found in {milestone_path}.")
+    raise ValueError(f"Milestone {milestone_id!r} not found in {milestone_path}.")
 
 
 class DesktopShellVerifier:

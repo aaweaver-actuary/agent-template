@@ -1,6 +1,6 @@
 [project]
 authors = [{ name = "Andy Weaver", email = "andrewayersweaver@gmail.com" }]
-dependencies = ["playwright>=1.58.0", "pydantic>=2.13.3"]
+dependencies = ["playwright>=1.58.0", "pydantic>=2.13.3", "PyYAML>=6.0.2"]
 description = "Add your description here"
 name = "agent-template"
 readme = "README.md"

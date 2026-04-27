@@ -1,30 +1,32 @@
+version: 1
 milestones:
   - id: shell_boot
     description: App boots into a recognizable desktop shell
+    target:
+      kind: static_server
+      url_path: /
     checks:
-      - name: desktop_root
+      - id: desktop_root
+        type: selector_exists
         selector: "[data-testid='desktop-root']"
-      - name: taskbar
+        required: true
+      - id: taskbar
+        type: selector_exists
         selector: "[data-testid='taskbar']"
-      - name: start_button
+        required: true
+      - id: start_button
+        type: selector_exists
         selector: "[data-testid='start-button']"
-
-  - id: static_desktop_shell
-    description: Basic shell regions are present
-    checks:
-      - name: wallpaper
-        selector: "[data-testid='wallpaper']"
-      - name: status_clock
-        selector: "[data-testid='status-clock']"
-      - name: desktop_icons
-        selector: "[data-testid='desktop-icons']"
-
-  - id: window_lifecycle
-    description: App launcher opens and closes a window
-    checks:
-      - name: app_launcher
-        selector: "[data-testid='app-launcher']"
-      - name: window
-        selector: "[data-testid='window']"
-      - name: close_button
-        selector: "[data-testid='window-close']"
+        required: true
+    work_package:
+      default_modify_files:
+        - src/agent_template/harness/desktop_shell/index.html
+      default_read_files:
+        - src/agent_template/milestones/desktop_shell.yaml
+        - src/agent_template/verifiers/desktop_shell.py
+      non_goals:
+        - no DOM snapshot persistence yet
+        - no reflection taxonomy expansion yet
+        - no repeated-touch touched-file comparison yet
+        - no work-package generation changes beyond retaining metadata
+        - no autonomous retry behavior

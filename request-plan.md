@@ -1,54 +1,60 @@
 # Request Plan
 
-- request_id: shell_boot_run_once_mvp_2026_04_27
-- user_goal: get the agent suite to the point where `agent-template run-once --milestone shell_boot` works end to end and matches the MVP behavior in `spec.md`
-- current_request_state: request_review
-- active_pr_scope: none
-- completed_pr_scopes: [pr1_bootstrap_and_verify_contract, pr2_run_once_execution_and_artifacts, pr3_reflection_progress_and_work_package, pr4_verify_failure_reflection_regression]
+- request_id: phase2_single_run_diagnostics_2026_04_27
+- user_goal: update the Phase 2 spec baseline and complete Phase 2 while preserving the single-run verify -> reflect -> package flow with no autonomous retry loop
+- current_request_state: pr_scope_in_progress
+- request_level_issue_status: clean
+- active_pr_scope: pr1_phase2_manifest_contract_and_operator_readme
+- completed_pr_scopes: []
 - deferred_pr_scopes:
-  - autonomous retry loops beyond single-run flow
+  - autonomous retry loops
   - recursive agent dispatch
-  - long-term memory automation
+  - autonomous code editing
   - milestone expansion beyond `shell_boot`
 - blocked_pr_scopes: []
 - ordered_pr_scopes:
-  - id: pr1_bootstrap_and_verify_contract
-    status: complete
-    objective: remove import and packaging blockers, align the command surface with the spec, and make `shell_boot` verification load from milestone YAML
+  - id: pr1_phase2_manifest_contract_and_operator_readme
+    status: in_progress
+    objective: establish the Phase 2 interface boundary by replacing the hand-rolled milestone parser with a typed `PyYAML` manifest contract and by shipping the required operator README
     completion_gates:
-      - package import succeeds cleanly
-      - CLI exposes a spec-aligned verify surface
-      - shell_boot verification reads milestone YAML instead of hard-coded selectors
-      - targeted bootstrap and verifier tests pass
-  - id: pr2_run_once_execution_and_artifacts
-    status: complete
-    objective: implement the single-run controller that wires state, process management, verification, and artifact persistence together
+      - `README.md` explains install, tests, `run-once`, artifact layout, `reflection.json`, and `work-package.json`
+      - milestone loading uses `PyYAML`
+      - malformed manifests fail with actionable validation errors
+      - the verifier still loads `shell_boot` from milestone data
+      - focused parser and verifier tests pass
+  - id: pr2_phase2_dom_snapshot_and_artifact_contract
+    status: planned
+    objective: extend the per-run artifact contract so a page-reaching verification persists a DOM snapshot alongside the screenshot without changing the single-run controller shape
     completion_gates:
-      - `agent-template run-once --milestone shell_boot` executes end to end
-      - state and core artifacts are written in a stable per-run layout
-      - boot failures capture process output and skip browser checks
-      - started services are cleaned up deterministically
-  - id: pr3_reflection_progress_and_work_package
-    status: complete
-    objective: make failures actionable by adding richer reflection, stalled-progress detection, and bounded work-package output
+      - a verification run that reaches the page writes both screenshot and DOM snapshot artifacts
+      - result and reflection artifact references point to persisted files
+      - boot failures may omit page artifacts but still persist process artifacts
+      - focused artifact tests pass
+  - id: pr3_phase2_reflection_taxonomy_and_repeated_touch_detection
+    status: planned
+    objective: make reflection diagnostically useful by separating broad classification from narrow subtype and by detecting same-files same-failure incidents without introducing retries
     completion_gates:
-      - failing runs emit structured reflection records
-      - repeated no-improvement failures increment `no_progress_count`
-      - stalled progress is classified explicitly
-      - each failed run emits a bounded work-package artifact
-  - id: pr4_verify_failure_reflection_regression
-    status: complete
-    objective: repair the verify failure-path contract so a failed verify run returns a clean failure result with reflection data instead of raising a TypeError
+      - reflection artifacts distinguish `issue_kind` and `issue_subtype`
+      - required subtype coverage is implemented
+      - repeated-touch detection uses failed checks plus touched files when available and degrades gracefully when not
+      - focused reflection and run-once tests pass
+  - id: pr4_phase2_data_driven_work_package_and_scope_delta
+    status: planned
+    objective: make next-slice packaging reusable by deriving bounds from manifest and target metadata, and emit `scope_delta` when the likely fix is outside the bounded package
     completion_gates:
-      - a failing verify invocation exits with failure status instead of raising TypeError
-      - the verify failure path persists reflection data with the required `issue_kind` field
-      - a focused CLI regression test fails on the pre-fix behavior and passes after the fix
-      - targeted validation passes for the touched slice
+      - work packages no longer hardcode the desktop-shell implementation path
+      - package bounds come from manifest or target metadata plus incident context
+      - stale selector and stale acceptance incidents direct downstream work to test or spec surfaces first
+      - out-of-bounds fixes emit `scope_delta`
+      - focused work-package and end-to-end validation passes
 - request_completion_gates:
-  - the verifier for `shell_boot` is driven from milestone YAML rather than hard-coded selectors: complete
-  - `agent-template run-once --milestone shell_boot` executes the run flow end to end against a controlled target or fixture harness: complete
-  - the run flow writes state, result, screenshot, and process or log artifacts in a stable per-run layout: complete
-  - a failing run produces a reflection record and a bounded next work package: complete
-  - repeated no-improvement failures increment `no_progress_count` and classify stalled progress: complete
-  - a passing rerun records a passing milestone result without manual state surgery: complete
-- final_response_readiness: blocked_by_missing_github_identity_for_external_issue_sync
+  - preserve single-run `run-once`
+  - switch milestone loading to `PyYAML` plus explicit schema validation
+  - persist screenshot plus DOM snapshot when page load is reached
+  - expand reflection to broad and narrow failure taxonomy
+  - use failed-check signatures plus touched files for repeated-touch detection
+  - emit `scope_delta` when likely fixes exceed bounds
+  - generate work packages from manifest or target metadata instead of desktop-shell constants
+  - ship the short operator README
+  - cover the new parser, artifact, reflection, repeated-touch, packaging, and README command paths with focused validation
+- final_response_readiness: not_ready
