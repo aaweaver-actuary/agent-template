@@ -1,0 +1,18 @@
+[project]
+authors = [{ name = "Andy Weaver", email = "andrewayersweaver@gmail.com" }]
+dependencies = ["playwright>=1.58.0", "pydantic>=2.13.3"]
+description = "Add your description here"
+name = "agent-template"
+readme = "README.md"
+requires-python = ">=3.13"
+version = "0.1.0"
+
+[project.scripts]
+agent-template = "agent_template:main"
+
+[build-system]
+build-backend = "uv_build"
+requires = ["uv_build>=0.11.0,<0.12.0"]
+
+[dependency-groups]
+dev = ["pytest>=9.0.3", "ruff>=0.15.11", "ty>=0.0.32"]

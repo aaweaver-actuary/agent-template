@@ -1,0 +1,30 @@
+milestones:
+  - id: shell_boot
+    description: App boots into a recognizable desktop shell
+    checks:
+      - name: desktop_root
+        selector: "[data-testid='desktop-root']"
+      - name: taskbar
+        selector: "[data-testid='taskbar']"
+      - name: start_button
+        selector: "[data-testid='start-button']"
+
+  - id: static_desktop_shell
+    description: Basic shell regions are present
+    checks:
+      - name: wallpaper
+        selector: "[data-testid='wallpaper']"
+      - name: status_clock
+        selector: "[data-testid='status-clock']"
+      - name: desktop_icons
+        selector: "[data-testid='desktop-icons']"
+
+  - id: window_lifecycle
+    description: App launcher opens and closes a window
+    checks:
+      - name: app_launcher
+        selector: "[data-testid='app-launcher']"
+      - name: window
+        selector: "[data-testid='window']"
+      - name: close_button
+        selector: "[data-testid='window-close']"

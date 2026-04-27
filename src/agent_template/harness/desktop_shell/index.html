@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <title>Desktop Shell Harness</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at top, rgba(249, 219, 143, 0.55), transparent 34%),
+          linear-gradient(135deg, #0f3057 0%, #145374 45%, #5588a3 100%);
+        color: #f5f7fa;
+      }
+
+      .shell {
+        width: min(960px, calc(100vw - 32px));
+        min-height: 580px;
+        border-radius: 28px;
+        overflow: hidden;
+        background: rgba(8, 26, 46, 0.82);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        box-shadow: 0 24px 80px rgba(4, 9, 18, 0.35);
+        backdrop-filter: blur(18px);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .workspace {
+        flex: 1;
+        padding: 32px;
+        display: grid;
+        gap: 20px;
+        align-content: start;
+        background:
+          linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent),
+          url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"%3E%3Cg fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"%3E%3Cpath d="M0 80h160"/%3E%3Cpath d="M80 0v160"/%3E%3C/g%3E%3C/svg%3E');
+      }
+
+      .hero {
+        max-width: 420px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2.4rem, 5vw, 4rem);
+        line-height: 0.94;
+        letter-spacing: -0.05em;
+      }
+
+      .hero p {
+        margin: 12px 0 0;
+        color: rgba(245, 247, 250, 0.82);
+        line-height: 1.5;
+      }
+
+      .widgets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .widget {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .widget strong {
+        display: block;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(245, 247, 250, 0.72);
+      }
+
+      .widget span {
+        display: block;
+        margin-top: 12px;
+        font-size: 1.45rem;
+      }
+
+      .taskbar {
+        min-height: 76px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 0 20px;
+        background: rgba(4, 12, 24, 0.78);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .taskbar-left,
+      .taskbar-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .start-button,
+      .task-pill {
+        border: 0;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        color: inherit;
+        font: inherit;
+        padding: 12px 18px;
+      }
+
+      .start-button {
+        background: linear-gradient(135deg, #ffd166, #ef476f);
+        color: #14213d;
+        font-weight: 700;
+      }
+
+      .clock {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        font-variant-numeric: tabular-nums;
+      }
+
+      @media (max-width: 680px) {
+        .workspace {
+          padding: 24px;
+        }
+
+        .taskbar {
+          padding: 14px;
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .taskbar-left,
+        .taskbar-right {
+          justify-content: center;
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class='shell' data-testid='desktop-root'>
+      <section class='workspace'>
+        <div class='hero'>
+          <h1>Operator shell</h1>
+          <p>Controlled harness used by PR2 to validate the run-once execution path end to end.</p>
+        </div>
+        <div class='widgets'>
+          <article class='widget'>
+            <strong>Status</strong>
+            <span>Ready for verification</span>
+          </article>
+          <article class='widget'>
+            <strong>Milestone</strong>
+            <span>shell_boot</span>
+          </article>
+          <article class='widget'>
+            <strong>Target</strong>
+            <span>desktop shell</span>
+          </article>
+        </div>
+      </section>
+      <footer class='taskbar' data-testid='taskbar'>
+        <div class='taskbar-left'>
+          <button class='start-button' data-testid='start-button' type='button'>Start</button>
+          <button class='task-pill' type='button'>Terminal</button>
+          <button class='task-pill' type='button'>Artifacts</button>
+        </div>
+        <div class='taskbar-right'>
+          <div class='clock' aria-label='clock'>09:41</div>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

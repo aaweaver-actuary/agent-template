@@ -1,0 +1,33 @@
+{
+  "run_id": "98716bc7-4546-4b9b-b5cc-8e21ffabddfa",
+  "objective": "run once shell_boot",
+  "repo_path": "/Users/andy/agent-template",
+  "branch_id": "main",
+  "milestone_id": "shell_boot",
+  "current_score": 1.0,
+  "checkpoint": null,
+  "no_progress_count": 0,
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "path": ".tmp/review-artifacts/runs/98716bc7-4546-4b9b-b5cc-8e21ffabddfa/screenshot/shell_boot.png",
+      "created_at": "2026-04-27T10:23:24.286345+00:00",
+      "label": "shell_boot"
+    },
+    {
+      "kind": "json",
+      "path": ".tmp/review-artifacts/runs/98716bc7-4546-4b9b-b5cc-8e21ffabddfa/state.json",
+      "created_at": "2026-04-27T10:23:24.294225+00:00",
+      "label": "run-state"
+    },
+    {
+      "kind": "json",
+      "path": ".tmp/review-artifacts/runs/98716bc7-4546-4b9b-b5cc-8e21ffabddfa/result.json",
+      "created_at": "2026-04-27T10:23:24.294420+00:00",
+      "label": "milestone-result"
+    }
+  ],
+  "last_reflection": null,
+  "last_work_package": null,
+  "updated_at": "2026-04-27T10:23:22.874362+00:00"
+}
