@@ -72,8 +72,10 @@ def run_verify(args: argparse.Namespace) -> int:
                 slice_id='verify-command',
                 milestone_result=result,
                 target=args.milestone,
-                classification='implementation_bug',
+                classification='verification_failure',
                 issue_kind='code',
+                issue_subtype='missing_ui',
+                touched_files=[],
                 next_strategy=[
                     'inspect milestone selectors',
                     'inspect missing UI elements',

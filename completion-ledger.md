@@ -1,34 +1,29 @@
 # Completion Ledger
 
-- pr_scope_id: pr2_phase2_dom_snapshot_and_artifact_contract
-- objective: extend the per-run artifact contract so a page-reaching verification persists a DOM snapshot alongside the screenshot without changing the single-run controller shape
-- rebaseline_note: prior completion state for `pr1_phase2_manifest_contract_and_operator_readme` is archived and is no longer the active source of truth for this materially new PR scope
+- pr_scope_id: pr3_phase2_reflection_taxonomy_and_repeated_touch_detection
+- objective: make reflection diagnostically useful by separating broad classification from narrow subtype and by detecting same-files same-failure incidents without introducing retries
+- rebaseline_note: prior completion state for pr2_phase2_dom_snapshot_and_artifact_contract is archived and is no longer the active source of truth for this materially new PR scope
 - lifecycle_state: complete
 - included_issues:
-  - add DOM snapshot capture to the browser runner
-  - persist DOM artifacts into the run directory
-  - expose stable artifact references through result and reflection payloads
-  - keep boot-failure behavior limited to process artifacts when page load is never reached
-  - add focused artifact-persistence tests
+  - reflection artifacts distinguish issue_kind and issue_subtype
+  - required subtype coverage is implemented
+  - repeated-touch detection uses failed checks plus touched files when available and degrades gracefully when not
+  - focused reflection and run-once tests pass
 - completion_gates:
-  - a verification run that reaches the page writes both screenshot and DOM snapshot artifacts: pass
-  - result and reflection artifact references point to persisted files: pass
-  - boot failures may omit page artifacts but still persist process artifacts: pass
-  - focused artifact tests pass: pass
+  - reflection artifacts distinguish issue_kind and issue_subtype: pass
+  - required subtype coverage is implemented: pass
+  - repeated-touch detection uses failed checks plus touched files when available and degrades gracefully when not: pass
+  - focused reflection and run-once tests pass: pass
 - completed_slices:
-  - dom_snapshot_capture_and_persisted_artifact_contract: implemented in `src/agent_template/browser/playwright_runner.py`, `src/agent_template/verifiers/desktop_shell.py`, `tests/test_desktop_shell_verifier.py`, and `tests/test_run_once.py` with focused pytest and `run-once` validation
+  - reflection_taxonomy_and_repeated_touch_detection: implemented in src/agent_template/models.py, src/agent_template/ledger/reflection.py, src/agent_template/runtime/run_once.py, src/agent_template/cli.py, tests/test_reflection.py, tests/test_run_once.py, and tests/test_state_store.py with focused pytest validation
 - latest_evidence:
-  - issue_delta_status: `repo:aaweaver-actuary/agent-template is:issue is:open` -> 0 open issues
-  - browser_runner_baseline: `src/agent_template/browser/playwright_runner.py` exposes `screenshot()` but no DOM snapshot capture path
-  - artifact_schema_baseline: `src/agent_template/models.py` already allows `ArtifactRef.kind="dom_snapshot"`, but no active producer writes one
-  - runtime_baseline: `src/agent_template/runtime/run_once.py` persists `state.json`, `result.json`, `reflection.json`, `work-package.json`, and process logs, but does not add a DOM artifact on page-reaching runs
-  - focused_run_once_pytest: `./.venv/bin/pytest tests/test_run_once.py -q` -> 5 passed
-  - page_reaching_run_baseline: `./.venv/bin/agent-template run-once --milestone shell_boot --state-path .tmp/pr2-baseline/state.json --artifacts-path .tmp/pr2-baseline/artifacts` -> passed with score `1.0`; run directory contains `logs/`, `result.json`, `screenshot/`, and `state.json`, and `result.json` lists only the screenshot artifact
-  - boot_failure_baseline: `tests/test_run_once.py` verifies boot failures skip browser checks and persist `target.stdout.log` and `target.stderr.log`
-  - focused_artifact_pytest: `./.venv/bin/pytest tests/test_artifact_store.py tests/test_desktop_shell_verifier.py tests/test_run_once.py -q` -> 12 passed
-  - page_reaching_run_validation: `./.venv/bin/agent-template run-once --milestone shell_boot --state-path .tmp/pr2-final/state.json --artifacts-path .tmp/pr2-final/artifacts` -> passed with score `1.0`; run directory contains `logs/`, `result.json`, `screenshot/`, `dom_snapshot/`, and `state.json`, and `result.json` lists both persisted artifact refs
-  - reflection_artifact_validation: `tests/test_run_once.py::test_run_once_page_reaching_failure_persists_reflection_artifact_paths` passed, proving `reflection.json` artifact refs point to persisted screenshot and dom snapshot files
+  - issue_delta_status: repo:aaweaver-actuary/agent-template is:issue is:open -> 0 open issues
+  - schema_contract_update: ReflectionRecord now persists issue_subtype and touched_files, and RunState now persists touched_files
+  - classifier_update: src/agent_template/ledger/reflection.py now separates classification from issue_kind and issue_subtype, covers boot, schema, test, spec, scope, and repeated-touch incidents, and keeps same-files same-failure gated on matching evidence plus matching touched files
+  - runtime_update: src/agent_template/runtime/run_once.py now records touched files, threads prior evidence into classifier decisions, and explains graceful degradation when touched-file data is unavailable
+  - cli_update: src/agent_template/cli.py verify fallback now emits verification_failure with missing_ui subtype and empty touched_files
+  - focused_pr3_pytest: ./.venv/bin/pytest tests/test_reflection.py tests/test_run_once.py tests/test_state_store.py -q -> 12 passed
 - reflection_incidents:
-  - trigger_type: failed focused pytest after new PR2 contract tests; classification: implementation_bug; expected evidence: screenshot and dom_snapshot artifacts in verifier, result.json, and reflection.json; observed evidence: only screenshot was produced; next action: add `PlaywrightRunner.dom_snapshot()` and return it from `DesktopShellVerifier.verify()`
-- next_routing_decision: report PR2 complete upward and release `pr3_phase2_reflection_taxonomy_and_repeated_touch_detection` from dependency on the DOM snapshot artifact contract
+  - trigger_type: failed focused pytest after first PR3 runtime wiring; classification: implementation bug; expected evidence: selector-mismatch incidents stay in verification_failure and improved verifier scores do not report stalled_progress; observed evidence: selector-mismatch touched tests escalated to scope_delta and improved failures still classified as stalled_progress; next action: move scope escalation behind explicit test and spec diagnoses and require repeated-failure evidence equality before same-files same-failure
+- next_routing_decision: mark PR3 complete, report PR4 unblocked, and leave data-driven work-package derivation for the next PR scope
 - pr_scope_outcome: complete

@@ -44,15 +44,13 @@ def classify_reflection_issue(
     modify_files: list[str] | None,
     previous_failed_checks: list[str] | None,
     previous_touched_files: list[str] | None,
+    previous_observed_evidence: list[str] | None = None,
 ) -> ReflectionIssue:
     current_touched_files = _normalize_paths(touched_files)
     previous_touched = _normalize_paths(previous_touched_files)
     allowed_modify_files = set(modify_files or [])
     text = _joined_evidence(observed_evidence)
-
-    if current_touched_files and allowed_modify_files:
-        if any(path not in allowed_modify_files for path in current_touched_files):
-            return ReflectionIssue('scope_delta', 'scope', 'outside_work_package')
+    previous_text = _joined_evidence(previous_observed_evidence or [])
 
     if trigger_type == 'schema_error':
         return ReflectionIssue('schema_error', 'spec', 'schema_violation')
@@ -69,8 +67,17 @@ def classify_reflection_issue(
     if 'selector mismatch' in text or 'selector is stale' in text:
         return ReflectionIssue('verification_failure', 'test', 'selector_mismatch')
 
-    if failed_checks and failed_checks == list(previous_failed_checks or []) and _same_touched_files(current_touched_files, previous_touched):
+    if (
+        failed_checks
+        and failed_checks == list(previous_failed_checks or [])
+        and _same_touched_files(current_touched_files, previous_touched)
+        and previous_text == text
+    ):
         return ReflectionIssue('stalled_progress', 'code', 'same_files_same_failure')
+
+    if current_touched_files and allowed_modify_files:
+        if any(path not in allowed_modify_files for path in current_touched_files):
+            return ReflectionIssue('scope_delta', 'scope', 'outside_work_package')
 
     return ReflectionIssue('verification_failure', 'code', 'missing_ui')
 
