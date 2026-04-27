@@ -7,6 +7,28 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 
+ReflectionClassification = Literal[
+    "verification_failure",
+    "stalled_progress",
+    "scope_delta",
+    "boot_failure",
+    "schema_error",
+]
+
+IssueKind = Literal["code", "test", "spec", "scope"]
+
+IssueSubtype = Literal[
+    "selector_mismatch",
+    "missing_ui",
+    "runtime_error",
+    "network_error",
+    "stale_acceptance_criteria",
+    "outside_work_package",
+    "schema_violation",
+    "same_files_same_failure",
+]
+
+
 def utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -94,8 +116,10 @@ class ReflectionRecord(BaseModel):
     observed_evidence: list[str]
     changed_since_last_attempt: list[str] = Field(default_factory=list)
     failed_checks: list[str] = Field(default_factory=list)
-    classification: str
-    issue_kind: Literal["code", "test", "spec", "scope"]
+    classification: ReflectionClassification
+    issue_kind: IssueKind
+    issue_subtype: IssueSubtype
+    touched_files: list[str] = Field(default_factory=list)
     next_strategy: list[str]
     no_progress_count: int = 0
     durable_memory_candidate: bool = False
@@ -127,6 +151,7 @@ class RunState(BaseModel):
     current_score: float | None = None
     checkpoint: SnapshotRef | None = None
     no_progress_count: int = 0
+    touched_files: list[str] = Field(default_factory=list)
     artifacts: list[ArtifactRef] = Field(default_factory=list)
     last_reflection: ReflectionRecord | None = None
     last_work_package: WorkPackage | None = None

@@ -113,6 +113,7 @@ class DesktopShellVerifier:
         milestone = load_milestone_definition(milestone_id, self.milestone_path)
         self.runner.goto(url)
         screenshot = self.runner.screenshot(milestone_id)
+        dom_snapshot = self.runner.dom_snapshot(milestone_id)
 
         checks: list[CheckResult] = [
             selector_exists(self.runner.page, check.name, check.selector)
@@ -135,7 +136,7 @@ class DesktopShellVerifier:
             score=score,
             checks=checks,
             summary=milestone.description,
-            artifacts=[screenshot],
+            artifacts=[screenshot, dom_snapshot],
         )
 
     def verify_shell_boot(self, url: str) -> MilestoneResult:

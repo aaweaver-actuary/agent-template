@@ -58,6 +58,11 @@ milestones:
         path=".tmp/shell.png",
         label="shell_boot",
     )
+    runner.dom_snapshot.return_value = ArtifactRef(
+        kind="dom_snapshot",
+        path=".tmp/shell.html",
+        label="shell_boot",
+    )
 
     verifier = DesktopShellVerifier(runner, milestone_path=milestone_path)
     result = verifier.verify_shell_boot("http://localhost:3000")
@@ -69,6 +74,12 @@ milestones:
         "desktop_root",
         "launch_button",
     ]
+    assert [artifact.kind for artifact in result.artifacts] == [
+        "screenshot",
+        "dom_snapshot",
+    ]
+    runner.goto.assert_called_once_with("http://localhost:3000")
+    runner.dom_snapshot.assert_called_once_with("shell_boot")
     assert page.locator.call_args_list[0].args[0] == "[data-testid='desktop-root']"
     assert page.locator.call_args_list[1].args[0] == "[data-testid='launch-button']"
 

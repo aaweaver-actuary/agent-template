@@ -1,0 +1,52 @@
+{
+  "milestone_id": "shell_boot",
+  "passed": true,
+  "score": 1.0,
+  "checks": [
+    {
+      "name": "desktop_root",
+      "passed": true,
+      "evidence": "selector=[data-testid='desktop-root'], count=1",
+      "artifacts": []
+    },
+    {
+      "name": "taskbar",
+      "passed": true,
+      "evidence": "selector=[data-testid='taskbar'], count=1",
+      "artifacts": []
+    },
+    {
+      "name": "start_button",
+      "passed": true,
+      "evidence": "selector=[data-testid='start-button'], count=1",
+      "artifacts": []
+    },
+    {
+      "name": "no_console_errors",
+      "passed": true,
+      "evidence": "no console errors",
+      "artifacts": []
+    },
+    {
+      "name": "no_network_failures",
+      "passed": true,
+      "evidence": "no network failures",
+      "artifacts": []
+    }
+  ],
+  "summary": "App boots into a recognizable desktop shell",
+  "artifacts": [
+    {
+      "kind": "screenshot",
+      "path": ".tmp/pr2-final/artifacts/runs/ae80fa97-25fb-4f83-a46c-38281d8cdc40/screenshot/shell_boot.png",
+      "created_at": "2026-04-27T11:15:52.067905+00:00",
+      "label": "shell_boot"
+    },
+    {
+      "kind": "dom_snapshot",
+      "path": ".tmp/pr2-final/artifacts/runs/ae80fa97-25fb-4f83-a46c-38281d8cdc40/dom_snapshot/shell_boot.html",
+      "created_at": "2026-04-27T11:15:52.070232+00:00",
+      "label": "shell_boot"
+    }
+  ]
+}

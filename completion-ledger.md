@@ -1,30 +1,34 @@
 # Completion Ledger
 
-- pr_scope_id: pr1_phase2_manifest_contract_and_operator_readme
-- objective: establish the Phase 2 interface boundary by replacing the hand-rolled milestone parser with a typed `PyYAML` manifest contract and by shipping the required operator README
-- rebaseline_note: prior completion state for `pr4_verify_failure_reflection_regression` is archived and is no longer the active source of truth for this materially new PR scope
-- lifecycle_state: slice_ready
+- pr_scope_id: pr2_phase2_dom_snapshot_and_artifact_contract
+- objective: extend the per-run artifact contract so a page-reaching verification persists a DOM snapshot alongside the screenshot without changing the single-run controller shape
+- rebaseline_note: prior completion state for `pr1_phase2_manifest_contract_and_operator_readme` is archived and is no longer the active source of truth for this materially new PR scope
+- lifecycle_state: complete
 - included_issues:
-  - add the short operator README
-  - add `PyYAML` to project dependencies
-  - introduce explicit manifest models for version, milestone metadata, target metadata, checks, and optional work-package hints
-  - refactor the verifier to load validated manifest data instead of ad hoc line parsing
-  - add focused schema-validation tests and update the milestone fixture shape
+  - add DOM snapshot capture to the browser runner
+  - persist DOM artifacts into the run directory
+  - expose stable artifact references through result and reflection payloads
+  - keep boot-failure behavior limited to process artifacts when page load is never reached
+  - add focused artifact-persistence tests
 - completion_gates:
-  - `README.md` explains install, tests, `run-once`, artifact layout, `reflection.json`, and `work-package.json`: fail
-  - milestone loading uses `PyYAML`: fail
-  - malformed manifests fail with actionable validation errors: fail
-  - the verifier still loads `shell_boot` from milestone data: pass
-  - focused parser and verifier tests pass: fail
-- completed_slices: []
+  - a verification run that reaches the page writes both screenshot and DOM snapshot artifacts: pass
+  - result and reflection artifact references point to persisted files: pass
+  - boot failures may omit page artifacts but still persist process artifacts: pass
+  - focused artifact tests pass: pass
+- completed_slices:
+  - dom_snapshot_capture_and_persisted_artifact_contract: implemented in `src/agent_template/browser/playwright_runner.py`, `src/agent_template/verifiers/desktop_shell.py`, `tests/test_desktop_shell_verifier.py`, and `tests/test_run_once.py` with focused pytest and `run-once` validation
 - latest_evidence:
-  - operator_readme_baseline: `README.md` is empty
-  - dependency_baseline: `pyproject.toml` dependencies are `playwright>=1.58.0` and `pydantic>=2.13.3`; `PyYAML` is not declared
-  - parser_baseline: `src/agent_template/verifiers/desktop_shell.py` still uses `_parse_scalar` plus indentation-based line parsing instead of `PyYAML`
-  - manifest_baseline: `src/agent_template/milestones/desktop_shell.yaml` still uses the Phase 1 shape with `name` and `selector` only, and has no `version`, `target`, or `work_package` metadata
-  - focused_verifier_pytest: `./.venv/bin/pytest tests/test_desktop_shell_verifier.py -q` -> 1 passed, covering only the Phase 1 parser shape
-  - cli_help: `./.venv/bin/agent-template --help` -> commands `verify` and `run-once`
-  - run_once_help: `./.venv/bin/agent-template run-once --help` -> supports `--milestone`, `--url`, `--state-path`, `--artifacts-path`, `--milestone-file`, and headless flags
-  - issue_delta_status: request-level Issue Tracker status supplied as clean with 0 relevant open GitHub issues on `aaweaver-actuary/agent-template`
-- next_routing_decision: dispatch the bounded first slice on `README.md`, `pyproject.toml`, `tests/test_desktop_shell_verifier.py`, and `src/agent_template/milestones/desktop_shell.yaml` to land the operator README contract, declare `PyYAML`, and define the red manifest-schema boundary before widening into runtime verifier changes
-- pr_scope_outcome: in_progress
+  - issue_delta_status: `repo:aaweaver-actuary/agent-template is:issue is:open` -> 0 open issues
+  - browser_runner_baseline: `src/agent_template/browser/playwright_runner.py` exposes `screenshot()` but no DOM snapshot capture path
+  - artifact_schema_baseline: `src/agent_template/models.py` already allows `ArtifactRef.kind="dom_snapshot"`, but no active producer writes one
+  - runtime_baseline: `src/agent_template/runtime/run_once.py` persists `state.json`, `result.json`, `reflection.json`, `work-package.json`, and process logs, but does not add a DOM artifact on page-reaching runs
+  - focused_run_once_pytest: `./.venv/bin/pytest tests/test_run_once.py -q` -> 5 passed
+  - page_reaching_run_baseline: `./.venv/bin/agent-template run-once --milestone shell_boot --state-path .tmp/pr2-baseline/state.json --artifacts-path .tmp/pr2-baseline/artifacts` -> passed with score `1.0`; run directory contains `logs/`, `result.json`, `screenshot/`, and `state.json`, and `result.json` lists only the screenshot artifact
+  - boot_failure_baseline: `tests/test_run_once.py` verifies boot failures skip browser checks and persist `target.stdout.log` and `target.stderr.log`
+  - focused_artifact_pytest: `./.venv/bin/pytest tests/test_artifact_store.py tests/test_desktop_shell_verifier.py tests/test_run_once.py -q` -> 12 passed
+  - page_reaching_run_validation: `./.venv/bin/agent-template run-once --milestone shell_boot --state-path .tmp/pr2-final/state.json --artifacts-path .tmp/pr2-final/artifacts` -> passed with score `1.0`; run directory contains `logs/`, `result.json`, `screenshot/`, `dom_snapshot/`, and `state.json`, and `result.json` lists both persisted artifact refs
+  - reflection_artifact_validation: `tests/test_run_once.py::test_run_once_page_reaching_failure_persists_reflection_artifact_paths` passed, proving `reflection.json` artifact refs point to persisted screenshot and dom snapshot files
+- reflection_incidents:
+  - trigger_type: failed focused pytest after new PR2 contract tests; classification: implementation_bug; expected evidence: screenshot and dom_snapshot artifacts in verifier, result.json, and reflection.json; observed evidence: only screenshot was produced; next action: add `PlaywrightRunner.dom_snapshot()` and return it from `DesktopShellVerifier.verify()`
+- next_routing_decision: report PR2 complete upward and release `pr3_phase2_reflection_taxonomy_and_repeated_touch_detection` from dependency on the DOM snapshot artifact contract
+- pr_scope_outcome: complete

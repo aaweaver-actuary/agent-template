@@ -60,6 +60,16 @@ class PlaywrightRunner:
         self.page.screenshot(path=path, full_page=True)
         return ArtifactRef(kind='screenshot', path=str(path), label=label)
 
+    def dom_snapshot(self, label: str) -> ArtifactRef:
+        self._validate_browser_started()
+        return self.artifact_store.write_run_text(
+            self.run_id,
+            f'dom_snapshot/{label}.html',
+            self.page.content(),
+            kind='dom_snapshot',
+            label=label,
+        )
+
     def console_errors(self) -> list[str]:
         return list(self._console_errors)
 
